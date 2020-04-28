@@ -1,1 +1,1 @@
-# nippetbox
+# snippetbox
