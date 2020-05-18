@@ -4,7 +4,13 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 )
+
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
 
 // Config is our config struct at runtime.
 type Config struct {
@@ -13,7 +19,6 @@ type Config struct {
 }
 
 func main() {
-	// Command line for our  address
 	// command line flag, default address, short descriptor
 	// addr := flag.String("addr", ":4000", "Http network address") // returns a pointer
 	cfg := new(Config)
@@ -21,21 +26,23 @@ func main() {
 	flag.StringVar(&cfg.StaticDir, "static-dir", "./ui/static", "Path to static assets")
 	// Parse is used to Parse the flag
 	flag.Parse()
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet?id=1", showSnippet)     // ANY
-	mux.HandleFunc("/snippet/create", createSnippet) // Post
-	// Create a file server which serves files out of the "./ui/static" directory.
-	// Note that the path given to the http.Dir function is relative to the project
-	// directory root.
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
 
-	// Use the mux.Handle() function to register the file server as the handler for
-	// all URL paths that start with "/static/". For matching paths, we strip the
-	// "/static" prefix before the request reaches the file server.
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	// creating custom error handlers, one for info other for errors
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	log.Printf("Starting server on %s", cfg.Addr)
-	err := http.ListenAndServe(cfg.Addr, mux)
-	log.Fatal(err)
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
+
+	srv := &http.Server{
+		Addr:     cfg.Addr,
+		ErrorLog: errorLog,
+		Handler:  app.routes(),
+	}
+
+	infoLog.Printf("Starting server on %s", cfg.Addr)
+	err := srv.ListenAndServe()
+	errorLog.Fatal(err)
 }
