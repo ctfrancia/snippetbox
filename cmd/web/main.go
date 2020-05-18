@@ -1,11 +1,26 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
 
+// Config is our config struct at runtime.
+type Config struct {
+	Addr      string
+	StaticDir string
+}
+
 func main() {
+	// Command line for our  address
+	// command line flag, default address, short descriptor
+	// addr := flag.String("addr", ":4000", "Http network address") // returns a pointer
+	cfg := new(Config)
+	flag.StringVar(&cfg.Addr, "addr", ":4000", "HTTP network address")
+	flag.StringVar(&cfg.StaticDir, "static-dir", "./ui/static", "Path to static assets")
+	// Parse is used to Parse the flag
+	flag.Parse()
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/snippet?id=1", showSnippet)     // ANY
@@ -20,7 +35,7 @@ func main() {
 	// "/static" prefix before the request reaches the file server.
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	log.Println("Starting server on :4000")
-	err := http.ListenAndServe(":4000", mux)
+	log.Printf("Starting server on %s", cfg.Addr)
+	err := http.ListenAndServe(cfg.Addr, mux)
 	log.Fatal(err)
 }
