@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +13,10 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *mysql.SnippetModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *mysql.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 // Config is our config struct at runtime.
@@ -27,10 +29,11 @@ type Config struct {
 func main() {
 	// command line flag, default address, short descriptor
 	// addr := flag.String("addr", ":4000", "Http network address") // returns a pointer
-	cfg := new(Config)
-	flag.StringVar(&cfg.Addr, "addr", ":4000", "HTTP network address")
-	flag.StringVar(&cfg.StaticDir, "static-dir", "./ui/static", "Path to static assets")
+	// cfg := new(Config)
+	// flag.StringVar(&cfg.Addr, "addr", ":4000", "HTTP network address")
+	// flag.StringVar(&cfg.StaticDir, "static-dir", "./ui/static", "Path to static assets")
 	// flag.StringVar(&cfg.DSN, "dsn", "web:Ressca000@/snippetbox?parseTime=true", "MySQL data source name")
+	adr := flag.String("adr", ":4000", "HTTP Network address")
 	dsn := flag.String("dsn", "web:Ressca000@/snippetbox?parseTime=true", "MySql data source name")
 	// Parse is used to Parse the flag
 	flag.Parse()
@@ -46,19 +49,26 @@ func main() {
 
 	defer db.Close()
 
+	// template cache
+	templateCache, err := newTemplateCache("./ui/html")
+	if nil != err {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &mysql.SnippetModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippets:      &mysql.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{
-		Addr:     cfg.Addr,
+		Addr:     *adr,
 		ErrorLog: errorLog,
 		Handler:  app.routes(),
 	}
 
-	infoLog.Printf("Starting server on %s", cfg.Addr)
+	infoLog.Printf("Starting server on %s", *adr)
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
