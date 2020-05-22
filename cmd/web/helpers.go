@@ -48,5 +48,8 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 		td = &templateData{}
 	}
 	td.CurrentYear = time.Now().Year()
+
+	// Here we are adding the default value to our sessions
+	td.Flash = app.session.PopString(r, "flash")
 	return td
 }
