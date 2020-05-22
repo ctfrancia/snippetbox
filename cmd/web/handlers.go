@@ -23,28 +23,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	app.render(w, r, "home.page.tmpl", &templateData{Snippets: s})
-
-	/*
-		data := &templateData{Snippets: s}
-
-			files := []string{
-				"./ui/html/home.page.tmpl",
-				"./ui/html/base.layout.tmpl",
-				"./ui/html/footer.partial.tmpl",
-			}
-
-			ts, err := template.ParseFiles(files...)
-			if err != nil {
-				app.serverError(w, err)
-				return
-			}
-
-			err = ts.Execute(w, data)
-			if err != nil {
-				app.serverError(w, err)
-				http.Error(w, "Internal Server Error", 500)
-			}
-	*/
 }
 
 // ShowSnippet shows a specific snippet
@@ -64,24 +42,6 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	app.render(w, r, "show.page.tmpl", &templateData{Snippet: s})
-	/*
-		files := []string{
-			"./ui/html/show.page.tmpl",
-			"./ui/html/base.layout.tmpl",
-			"./ui/html/footer.partial.tmpl",
-		}
-
-		data := &templateData{Snippet: s}
-		ts, err := template.ParseFiles(files...)
-		if err != nil {
-			app.serverError(w, err)
-			return
-		}
-		err = ts.Execute(w, data)
-		if err != nil {
-			app.serverError(w, err)
-		}
-	*/
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
