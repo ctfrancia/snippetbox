@@ -6,7 +6,10 @@ import (
 )
 
 // ErrNoRecord is for when an record isn't found
-var ErrNoRecord = errors.New("models: no matching record found")
+var (
+	ErrNoRecord           = errors.New("models: no matching record found")
+	ErrInvalidCredentials = errors.New("models: invalid credentials")
+)
 
 // Snippet is the model of our data
 type Snippet struct {
@@ -15,4 +18,14 @@ type Snippet struct {
 	Content string
 	Created time.Time
 	Expires time.Time
+}
+
+// User defines how our user model looks
+type User struct {
+	ID             int
+	Name           string
+	Email          string
+	HashedPassword []byte
+	Created        time.Time
+	Active         bool
 }
