@@ -5,4 +5,5 @@
 They are:
 
 `-addr=":<NUMBER>"` - will specify the port on which to run 
+
 `-dsn="user:pass@/database?parseTime=true"` - parseTime will parse the time from SQL time and date field into Go time.Time objects
