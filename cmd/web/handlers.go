@@ -3,13 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"strings"
-	"unicode/utf8"
-
-	// "html/template"
 	"net/http"
 	"strconv"
 
+	"github.com/ctfrancia/snippetbox/pkg/forms"
 	"github.com/ctfrancia/snippetbox/pkg/models"
 )
 
@@ -47,7 +44,9 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.tmpl", nil)
+	app.render(w, r, "create.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
@@ -56,36 +55,17 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires := r.PostForm.Get("expires")
+	form := forms.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValues("expires", "365", "7", "1")
 
-	errors := make(map[string]string)
-	if strings.TrimSpace(title) == "" {
-		errors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		errors["title"] = "This field is too long(Maximum is 100 characters)"
-	}
-
-	if strings.TrimSpace(content) == "" {
-		errors["content"] = "this field cannot be empty"
-	}
-
-	if strings.TrimSpace(expires) == "" {
-		errors["expires"] = "This field cannot be empty"
-	} else if expires != "365" && expires != "7" && expires != "1" {
-		errors["expires"] = "This field must be one of the options listed below"
-	}
-
-	if len(errors) > 0 {
-		app.render(w, r, "create.page.tmpl", &templateData{
-			FormErrors: errors,
-			FormData:   r.PostForm,
-		})
+	if !form.Valid() {
+		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
 		return
 	}
 
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(form.Get("title"), form.Get("content"), form.Get("expires"))
 	if err != nil {
 		app.serverError(w, err)
 		return
