@@ -51,5 +51,10 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 
 	// Here we are adding the default value to our sessions
 	td.Flash = app.session.PopString(r, "flash")
+	td.IsAuthenticated = app.isAuthenticated(r)
 	return td
+}
+
+func (app *application) isAuthenticated(r *http.Request) bool {
+	return app.session.Exists(r, "authenticatedUserID")
 }
