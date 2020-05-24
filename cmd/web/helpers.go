@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/justinas/nosurf"
 )
 
 // The serverError helper writes an error message and stack trace to the errorLog
@@ -47,10 +49,11 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 	if td == nil {
 		td = &templateData{}
 	}
-	td.CurrentYear = time.Now().Year()
 
 	// Here we are adding the default value to our sessions
 	td.Flash = app.session.PopString(r, "flash")
+	td.CSRFToken = nosurf.Token(r)
+	td.CurrentYear = time.Now().Year()
 	td.IsAuthenticated = app.isAuthenticated(r)
 	return td
 }
