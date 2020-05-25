@@ -15,6 +15,10 @@ import (
 	"github.com/golangcollege/sessions"
 )
 
+type contextKey string
+
+const contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
@@ -24,24 +28,11 @@ type application struct {
 	users         *mysql.UserModel
 }
 
-// Config is our config struct at runtime.
-type Config struct {
-	Addr      string
-	StaticDir string
-	DSN       string
-}
-
 func main() {
-	// command line flag, default address, short descriptor
-	// addr := flag.String("addr", ":4000", "Http network address") // returns a pointer
-	// cfg := new(Config)
-	// flag.StringVar(&cfg.Addr, "addr", ":4000", "HTTP network address")
-	// flag.StringVar(&cfg.StaticDir, "static-dir", "./ui/static", "Path to static assets")
-	// flag.StringVar(&cfg.DSN, "dsn", "web:Ressca000@/snippetbox?parseTime=true", "MySQL data source name")
 	adr := flag.String("adr", ":4000", "HTTP Network address")
 	dsn := flag.String("dsn", "web:Ressca000@/snippetbox?parseTime=true", "MySql data source name")
 	secret := flag.String("secret", "Sfd%sfg*-sadfgFg@-ADg^$asdf+934GFASd", "Secret session Key")
-	// Parse is used to Parse the flag
+	// Parse is used to Parse the flag(s)
 	flag.Parse()
 
 	// creating custom error handlers, one for info other for errors
