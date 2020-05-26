@@ -10,6 +10,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/ctfrancia/snippetbox/pkg/models"
+
 	"github.com/ctfrancia/snippetbox/pkg/models/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golangcollege/sessions"
@@ -20,17 +22,25 @@ type contextKey string
 const contextKeyIsAuthenticated = contextKey("isAuthenticated")
 
 type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	session       *sessions.Session
-	snippets      *mysql.SnippetModel
+	errorLog *log.Logger
+	infoLog  *log.Logger
+	session  *sessions.Session
+	snippets interface {
+		Insert(string, string, string) (int, error)
+		Get(int) (*models.Snippet, error)
+		Latest() ([]*models.Snippet, error)
+	}
 	templateCache map[string]*template.Template
-	users         *mysql.UserModel
+	users         interface {
+		Insert(string, string, string) error
+		Authenticate(string, string) (int, error)
+		Get(int) (*models.User, error)
+	}
 }
 
 func main() {
 	adr := flag.String("adr", ":4000", "HTTP Network address")
-	dsn := flag.String("dsn", "web:Ressca000@/snippetbox?parseTime=true", "MySql data source name")
+	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySql data source name")
 	secret := flag.String("secret", "Sfd%sfg*-sadfgFg@-ADg^$asdf+934GFASd", "Secret session Key")
 	// Parse is used to Parse the flag(s)
 	flag.Parse()
