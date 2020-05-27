@@ -9,7 +9,7 @@ import (
 var (
 	ErrNoRecord           = errors.New("models: no matching record found")
 	ErrInvalidCredentials = errors.New("models: invalid credentials")
-	ErrDuplicateEmail     = errors.New("models: Email already exists")
+	ErrDuplicateEmail     = errors.New("models: Email is already exists")
 )
 
 // Snippet is the model of our data
